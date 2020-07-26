@@ -22,11 +22,6 @@ public class LeaveControllerTest {
     public void setUp() throws Exception {
         mockMvc= MockMvcBuilders.standaloneSetup(leaveController).build();
     }
-
-    @After
-    public void tearDown() throws Exception {
-    }
-
     @Test
     public void health() throws Exception{
         mockMvc.perform(MockMvcRequestBuilders.get("/leaves/health"))
