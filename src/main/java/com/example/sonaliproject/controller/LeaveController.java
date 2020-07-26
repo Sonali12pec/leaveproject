@@ -1,40 +1,82 @@
 package com.example.sonaliproject.controller;
 
-import com.example.sonaliproject.constants.enums.LeaveStatus;
-import com.example.sonaliproject.model.entity.Leave;
+import com.example.sonaliproject.aop.annotation.Logged;
+import com.example.sonaliproject.aop.annotation.RequestThreadId;
+import com.example.sonaliproject.model.request.LeaveRequest;
+import com.example.sonaliproject.model.request.LeaveUpdateRequest;
+import com.example.sonaliproject.model.response.GenericResponse;
 import com.example.sonaliproject.model.response.LeaveResponse;
-import com.example.sonaliproject.repository.LeaveRepository;
+import com.example.sonaliproject.model.response.ResponseStatus;
+import com.example.sonaliproject.service.LeaveService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
-import org.springframework.data.rest.webmvc.BasePathAwareController;
-import org.springframework.data.rest.webmvc.RepositoryRestController;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resources;
 import java.util.List;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-@BasePathAwareController
+@RestController
+@RequestMapping("/leaves")
 public class LeaveController {
 
-    private final LeaveRepository leaveRepository;
+    @Autowired
+    private LeaveService leaveService;
 
-    public LeaveController(final LeaveRepository leaveRepository) {
-        this.leaveRepository = leaveRepository;
+    @GetMapping(value = "/health")
+    public String health(){
+        return "200OK";
     }
 
-//    @RequestMapping(path="leaves/{leaveStatus}", method=RequestMethod.GET,produces="application/hal+json")
-//    public ResponseEntity<List<LeaveResponse>> getAllFooFiltered(@PathVariable String leaveStatus) {
-//
-//        String sahil=leaveStatus;
-//        LeaveStatus leaveStatus1=LeaveStatus.valueOf(sahil);
-//        List<Leave> leaves=leaveRepository.findByLeaveStatus(LeaveStatus.valueOf(leaveStatus));
-//        return leaves.stream().map(leave -> ResponseEntity.ok(new LeaveResponse(leave)));
-//
-//
-//    }
+    @Logged
+    @RequestThreadId
+    @RequestMapping( method = RequestMethod.GET)
+    public GenericResponse<List<LeaveResponse>> getLeaves() {
+        GenericResponse<List<LeaveResponse>> response = new GenericResponse<>();
+        response.setData(leaveService.getLeaves());
+        response.setStatus(ResponseStatus.SUCCESS);
+        return response;
+    }
+    @Logged
+    @RequestThreadId
+    @RequestMapping(value =  "/{leaveStatus}", method = RequestMethod.GET)
+    public GenericResponse<List<LeaveResponse>> getLeave(@PathVariable("leaveStatus") String leaveStatus) {
+        GenericResponse<List<LeaveResponse>> response = new GenericResponse<>();
+        response.setData(leaveService.getLeave(leaveStatus));
+        response.setStatus(ResponseStatus.SUCCESS);
+        return response;
+    }
+    @Logged
+    @RequestThreadId
+    @RequestMapping(method = RequestMethod.POST)
+    public GenericResponse<String> createLeave(@RequestBody LeaveRequest leaveRequest) {
+        GenericResponse<String> response = new GenericResponse<>();
+        leaveService.createLeave(leaveRequest);
+        response.setData(ResponseStatus.SUCCESS);
+        response.setStatus(ResponseStatus.SUCCESS);
+        return response;
+    }
+
+    @Logged
+    @RequestThreadId
+    @RequestMapping(value =  "/{id}", method = RequestMethod.PUT)
+    public GenericResponse<LeaveResponse> updateLeave(@PathVariable("id") Long id, @RequestBody LeaveUpdateRequest leaveUpdateRequest) {
+        GenericResponse<LeaveResponse> response = new GenericResponse<>();
+        response.setData(leaveService.updateLeave(id,leaveUpdateRequest));
+        response.setStatus(ResponseStatus.SUCCESS);
+        return response;
+    }
+
+
+    @Logged
+    @RequestThreadId
+    @RequestMapping(value =  "/{id}", method = RequestMethod.DELETE)
+    public GenericResponse<String> deleteLeave(@PathVariable("id") Long id) {
+        GenericResponse<String> response = new GenericResponse<>();
+        leaveService.deleteLeave(id);
+        response.setData(ResponseStatus.SUCCESS);
+        response.setStatus(ResponseStatus.SUCCESS);
+        return response;
+    }
+
 
 }
+
